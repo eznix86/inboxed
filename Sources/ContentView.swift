@@ -22,6 +22,12 @@ struct InboxedApp: App {
                 }
         }
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About Inboxed") {
+                    InboxedAboutPanel.show()
+                }
+            }
+
             CommandGroup(replacing: .newItem) {}
             CommandMenu("Server") {
                 Button(server.isRunning ? "Stop Server" : "Start Server") {
@@ -37,6 +43,140 @@ struct InboxedApp: App {
             SettingsView()
                 .environmentObject(server)
         }
+    }
+}
+
+// MARK: - About Panel
+
+enum InboxedAboutPanel {
+    static let repositoryURL = URL(string: "https://github.com/eznix86/inboxed")!
+    static let docsURL = URL(string: "https://github.com/eznix86/inboxed#readme")!
+    static let iconCreditURL = URL(string: "https://macosicons.com/u/akid3v")!
+
+    private static var window: NSWindow?
+
+    static func show() {
+        if let window {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 520, height: 620),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "About Inboxed"
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isReleasedWhenClosed = false
+        window.contentView = NSHostingView(rootView: InboxedAboutView())
+        window.center()
+
+        self.window = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+}
+
+struct InboxedAboutView: View {
+    private var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Debug"
+    }
+
+    private var build: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "Local"
+    }
+
+    private var commit: String? {
+        guard let sha = Bundle.main.object(forInfoDictionaryKey: "InboxedGitCommit") as? String,
+              !sha.isEmpty else { return nil }
+
+        return String(sha.prefix(8))
+    }
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer(minLength: 24)
+
+            Image(nsImage: NSApp.applicationIconImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 154, height: 154)
+                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                .shadow(color: .black.opacity(0.24), radius: 18, y: 8)
+
+            VStack(spacing: 10) {
+                Text("Inboxed")
+                    .font(.system(size: 42, weight: .bold, design: .rounded))
+
+                Text("Native SMTP catcher for local development emails.")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 320)
+            }
+
+            VStack(spacing: 6) {
+                infoRow("Version", value: version)
+                infoRow("Build", value: build)
+                if let commit {
+                    infoRow("Commit", value: commit, isLink: true) {
+                        NSWorkspace.shared.open(InboxedAboutPanel.repositoryURL)
+                    }
+                }
+            }
+            .padding(.top, 4)
+
+            HStack(spacing: 14) {
+                Button("Docs") {
+                    NSWorkspace.shared.open(InboxedAboutPanel.docsURL)
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("GitHub") {
+                    NSWorkspace.shared.open(InboxedAboutPanel.repositoryURL)
+                }
+                .buttonStyle(.bordered)
+            }
+            .controlSize(.large)
+
+            Button("Icon by akid3v via macOSicons") {
+                NSWorkspace.shared.open(InboxedAboutPanel.iconCreditURL)
+            }
+            .buttonStyle(.link)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+            Spacer(minLength: 18)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(28)
+        .background(.background)
+    }
+
+    private func infoRow(
+        _ label: String,
+        value: String,
+        isLink: Bool = false,
+        action: (() -> Void)? = nil
+    ) -> some View {
+        HStack(spacing: 10) {
+            Text(label)
+                .foregroundStyle(.primary)
+            if let action {
+                Button(value, action: action)
+                    .buttonStyle(.link)
+                    .font(.system(.title3, design: .monospaced).weight(.semibold))
+            } else {
+                Text(value)
+                    .font(.system(.title3, design: .monospaced).weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .font(.title3.weight(.semibold))
     }
 }
 
