@@ -1,0 +1,72 @@
+name: Tagged Build
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build macOS Release
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: swift build --configuration release
+
+      - name: Package Artifact
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          APP_DIR="dist/Inboxed.app"
+
+          mkdir -p "${APP_DIR}/Contents/MacOS"
+          cp ".build/release/Inboxed" "${APP_DIR}/Contents/MacOS/Inboxed"
+          chmod +x "${APP_DIR}/Contents/MacOS/Inboxed"
+
+          cat > "${APP_DIR}/Contents/Info.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>
+            <string>Inboxed</string>
+            <key>CFBundleIdentifier</key>
+            <string>dev.inboxed.Inboxed</string>
+            <key>CFBundleName</key>
+            <string>Inboxed</string>
+            <key>CFBundleDisplayName</key>
+            <string>Inboxed</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${VERSION}</string>
+            <key>CFBundleVersion</key>
+            <string>${GITHUB_RUN_NUMBER}</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>14.0</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          cd dist
+          zip -r "Inboxed-${GITHUB_REF_NAME}-macos.zip" "Inboxed.app"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Inboxed-${{ github.ref_name }}-macos
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
