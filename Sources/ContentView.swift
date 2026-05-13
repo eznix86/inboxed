@@ -43,7 +43,6 @@ struct InboxedApp: App {
 // MARK: - Content View
 
 struct ContentView: View {
-    @Environment(\.openSettings) private var openSettings
     @EnvironmentObject var mailStore: MailStore
     @EnvironmentObject var server: SMTPServer
     @State private var selectedTab: SidebarTab = .inbox
@@ -195,7 +194,7 @@ struct ContentView: View {
                 .buttonStyle(.borderedProminent)
 
                 Button {
-                    openSettings()
+                    openSettingsWindow()
                 } label: {
                     Label("Settings", systemImage: "gearshape")
                 }
@@ -300,6 +299,12 @@ struct ContentView: View {
 
         mailStore.add(email)
         mailStore.selectedEmailID = email.id
+    }
+
+    private func openSettingsWindow() {
+        if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        }
     }
 
     // MARK: Toolbar
