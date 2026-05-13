@@ -1,5 +1,7 @@
 # Inboxed
 
+![inboxed screenshot](./art/inboxed.png)
+
 Inboxed is a native macOS SMTP catcher for local development. It runs a local SMTP server, captures outbound emails from your apps, and previews plain text, HTML, raw MIME content, and SMTP logs without forwarding anything outside your machine.
 
 ## Features
@@ -132,3 +134,7 @@ Release builds are currently unsigned. macOS may require right-clicking the app 
 - Inboxed is meant for local development only.
 - Emails are kept in memory for the current app session.
 - Inboxed never forwards or delivers email to real recipients.
+
+## Credits
+
+- App icon by [akid3v](https://macosicons.com/u/akid3v) via [macOSicons](https://macosicons.com/).
