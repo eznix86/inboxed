@@ -31,6 +31,8 @@ swift build
 swift run Inboxed
 ```
 
+`swift run Inboxed` is useful for development. macOS notifications are only enabled when Inboxed is launched from an `.app` bundle.
+
 For an app-bundle style local run:
 
 ```bash
