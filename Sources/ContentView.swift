@@ -379,11 +379,7 @@ struct SettingsView: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            Image(systemName: "paperplane.fill")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(.blue.gradient, in: RoundedRectangle(cornerRadius: 12))
+            appIcon
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("SMTP Server")
@@ -393,6 +389,19 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private var appIcon: some View {
+        Image(nsImage: NSImage(named: NSImage.applicationIconName) ?? NSApp.applicationIconImage)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 44, height: 44)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(.separator.opacity(0.45), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.16), radius: 8, y: 3)
     }
 
     private var serverCard: some View {
@@ -468,6 +477,10 @@ struct SettingsView: View {
             Button(server.isRunning ? "Stop Server" : "Start Server") {
                 server.isRunning ? server.stop() : server.start()
             }
+
+            Text("Icon by akid3v via macOSicons")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
 
             Spacer()
 
