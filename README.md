@@ -40,8 +40,35 @@ For an app-bundle style local run:
 ```bash
 swift build
 BIN_DIR="$(swift build --show-bin-path)"
-mkdir -p "Inboxed.app/Contents/MacOS"
+mkdir -p "Inboxed.app/Contents/MacOS" "Inboxed.app/Contents/Resources"
 cp "$BIN_DIR/Inboxed" "Inboxed.app/Contents/MacOS/Inboxed"
+cp "Resources/Inboxed.icns" "Inboxed.app/Contents/Resources/Inboxed.icns"
+cat > "Inboxed.app/Contents/Info.plist" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key>
+  <string>Inboxed</string>
+  <key>CFBundleIdentifier</key>
+  <string>dev.inboxed.Inboxed</string>
+  <key>CFBundleName</key>
+  <string>Inboxed</string>
+  <key>CFBundleDisplayName</key>
+  <string>Inboxed</string>
+  <key>CFBundleIconFile</key>
+  <string>Inboxed</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>14.0</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+</dict>
+</plist>
+EOF
 codesign --force --deep --sign - "Inboxed.app"
 open "Inboxed.app"
 ```
@@ -127,7 +154,21 @@ git push origin v1.0.0
 
 The workflow builds `Inboxed`, packages `Inboxed.app`, zips it, and publishes it to the GitHub release.
 
-Release builds are currently unsigned. macOS may require right-clicking the app and choosing **Open** the first time.
+Release builds are currently unsigned. After downloading and unzipping a release, you can ad-hoc sign it locally:
+
+```bash
+codesign --force --deep --sign - "Inboxed.app"
+```
+
+If macOS still blocks the app because it was downloaded from the internet, remove the quarantine attribute and sign again:
+
+```bash
+xattr -dr com.apple.quarantine "Inboxed.app"
+codesign --force --deep --sign - "Inboxed.app"
+open "Inboxed.app"
+```
+
+Alternatively, right-click `Inboxed.app` and choose **Open** the first time.
 
 ## Notes
 

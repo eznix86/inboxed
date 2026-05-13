@@ -24,9 +24,16 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           APP_DIR="dist/Inboxed.app"
+          ICON_FILE="Resources/Inboxed.icns"
 
-          mkdir -p "${APP_DIR}/Contents/MacOS"
+          if [ ! -f "${ICON_FILE}" ]; then
+            echo "::error::Missing ${ICON_FILE}. Add the app icon before creating a release."
+            exit 1
+          fi
+
+          mkdir -p "${APP_DIR}/Contents/MacOS" "${APP_DIR}/Contents/Resources"
           cp ".build/release/Inboxed" "${APP_DIR}/Contents/MacOS/Inboxed"
+          cp "${ICON_FILE}" "${APP_DIR}/Contents/Resources/Inboxed.icns"
           chmod +x "${APP_DIR}/Contents/MacOS/Inboxed"
 
           cat > "${APP_DIR}/Contents/Info.plist" <<EOF
@@ -41,6 +48,8 @@ jobs:
             <key>CFBundleName</key>
             <string>Inboxed</string>
             <key>CFBundleDisplayName</key>
+            <string>Inboxed</string>
+            <key>CFBundleIconFile</key>
             <string>Inboxed</string>
             <key>CFBundlePackageType</key>
             <string>APPL</string>
